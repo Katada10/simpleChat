@@ -72,6 +72,35 @@ public class EchoServer extends AbstractServer
       ("Server has stopped listening for connections.");
   }
   
+  
+  protected void clientConnected(ConnectionToClient client) {
+	  try {
+		  System.out.println(client + " has connected.");
+		client.sendToClient("Welcome to the server!");
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+  }
+
+  /**
+   * Hook method called each time a client disconnects.
+   * The default implementation does nothing. The method
+   * may be overridden by subclasses but should remains synchronized.
+   *
+   * @param client the connection with the client.
+   */
+  synchronized protected void clientDisconnected(
+    ConnectionToClient client) {
+	  try {
+		  System.out.println(client + " has disconnected.");
+			client.sendToClient("You have left the server. See you soon!");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+  }
+
   //Class methods ***************************************************
   
   /**
@@ -99,11 +128,14 @@ public class EchoServer extends AbstractServer
     try 
     {
       sv.listen(); //Start listening for connections
+      
     } 
     catch (Exception ex) 
     {
       System.out.println("ERROR - Could not listen for clients!");
     }
+    
+    
   }
 }
 //End of EchoServer class
