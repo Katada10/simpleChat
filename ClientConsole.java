@@ -52,18 +52,8 @@ public class ClientConsole implements ChatIF
    */
   public ClientConsole(String host, int port, String loginID) 
   {
-    try 
-    {
       client= new ChatClient(host, port, this, loginID);
-      
-      
-    } 
-    catch(IOException exception) 
-    {
-      System.out.println("Error: Can't setup connection!"
-                + " Terminating client.");
-      System.exit(1);
-    }
+    
     
     // Create scanner object to read from console
     fromConsole = new Scanner(System.in); 
@@ -121,11 +111,18 @@ public class ClientConsole implements ChatIF
     int port = 0;
     String id = "";
     
+    if(args.length == 0) {
+		System.out.println("ERROR - No login ID specified.  Connection aborted.");
+		System.exit(1);
+	}
+    
     try
     {
     	id = args[0];
     	host = args[1];
     	port = Integer.parseInt(args[2]);
+    	
+    	
     }
     catch(ArrayIndexOutOfBoundsException e)
     {

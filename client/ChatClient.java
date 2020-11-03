@@ -37,13 +37,18 @@ public class ChatClient extends AbstractClient {
 	 * @param clientUI The interface type variable.
 	 */
 
-	public ChatClient(String host, int port, ChatIF clientUI, String loginId) throws IOException {
+	public ChatClient(String host, int port, ChatIF clientUI, String loginId) {
 		super(host, port); // Call the superclass constructor
 		this.clientUI = clientUI;
 		this.loginId = loginId;
-		openConnection();
-		
-		sendToServer("#login "+ loginId);
+
+		try {
+			openConnection();
+			sendToServer("#login " + loginId);
+		} catch (Exception e) {
+			System.out.println("Cannot open connection. Awaiting command.");
+		}
+
 	}
 
 	// Instance methods ************************************************
@@ -68,26 +73,44 @@ public class ChatClient extends AbstractClient {
 				String[] commandArr = message.split(" ");
 				switch (commandArr[0].substring(1, commandArr[0].length())) {
 				case ("quit"):
+					sendToServer(loginId + " has disconnected");
 					quit();
+					System.exit(0);
 					break;
 				case ("logoff"):
-					closeConnection();
+					if (super.isConnected()) {
+						sendToServer(loginId + " has disconnected");
+						super.closeConnection();
+						System.out.println("Connection Closed");
+					} else {
+						System.out.println("Already disconnected!");
+					}
 					break;
 				case ("sethost"):
 					if (!isConnected()) {
 						setHost(commandArr[1]);
+						System.out.println("Host set to " + commandArr[1]);
 					} else {
 						clientUI.display("Already connected!");
+					}
+					break;
+				case ("login"):
+					if (!isConnected()) {
+						openConnection();
+						sendToServer("#login " + commandArr[1]);
+					} else {
+						clientUI.display("Already connected");
 					}
 					break;
 				case ("setport"):
 					if (!isConnected()) {
 						setPort(Integer.parseInt(commandArr[1]));
+						System.out.println("Port set to " + Integer.parseInt(commandArr[1]));
 					} else {
 						clientUI.display("Already connected!");
 					}
 					break;
-				
+
 				case ("gethost"):
 					clientUI.display(super.getHost());
 					break;
@@ -102,6 +125,10 @@ public class ChatClient extends AbstractClient {
 			clientUI.display("Could not send message to server.  Terminating client.");
 			quit();
 		}
+	}
+
+	protected void connectionClosed() {
+
 	}
 
 	/**
