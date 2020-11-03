@@ -47,8 +47,26 @@ public class EchoServer extends AbstractServer {
 	 * @param client The connection from which the message originated.
 	 */
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
-		System.out.println("Message received: " + msg + " from " + client);
-		this.sendToAllClients(msg);
+		if (msg.toString().toCharArray()[0] == '#') {
+			if (client.getInfo("connected") == null) {
+				String[] commandArr = msg.toString().split(" ");
+				client.setInfo("loginId", commandArr[1]);
+				client.setInfo("connected", "yes");
+			}else {
+				try {
+					client.sendToClient("Error: Already connected. Terminating...");
+					client.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+		}
+		else {
+			System.out.println("Message received: " + msg + " from " + client.getInfo("loginId"));
+			this.sendToAllClients(client.getInfo("loginId") + "> " + msg);
+		}
 	}
 
 	/**
@@ -135,7 +153,7 @@ public class EchoServer extends AbstractServer {
 				super.sendToAllClients("SERVER MSG> " + message);
 			}
 		} catch (IOException e) {
-			serverUI.display("Could not send message to server.  Terminating client.");
+			serverUI.display("Could not send message to server.  Terminating server.");
 			// quit();
 
 		}
